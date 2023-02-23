@@ -2,7 +2,6 @@
 // then added together into the root element
 // this app.js is the currently the only component that is added to the index.js
 
-import "./App.css";
 // importing a component into the app component
 import Header from "./Header";
 // importing component into the app component
