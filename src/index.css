@@ -19,6 +19,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button {
+  margin-bottom: 10px;
+  display: inline-block;
+  outline: 0;
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid #babfc3;
+  padding: 11px 24px;
+  min-height: 44px;
+  min-width: 44px;
+  color: #202223;
+  background: #ffffff;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 0px 0px;
+}
+
+button:hover {
+  background: #f6f6f7;
+  outline: 1px solid transparent;
+}
+
 .App {
   display: flex;
   flex-direction: column;
@@ -38,7 +61,7 @@ header {
 }
 
 main {
-  background-color:azure;
+  background-color: azure;
   width: 100%;
   display: flex;
   flex-direction: column;
