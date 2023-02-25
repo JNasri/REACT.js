@@ -66,7 +66,7 @@ main {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   overflow-y: auto;
 }
@@ -87,7 +87,7 @@ ul {
 }
 
 ul li::before {
-  content: '\200B';
+  content: "\200B";
 }
 
 .item {
@@ -120,7 +120,7 @@ ul li::before {
 }
 
 .item > label {
-  font-size: 1rem;
+  font-size: 1 rem;
   flex-grow: 1;
 }
 
@@ -129,11 +129,11 @@ ul li::before {
   min-width: 48px;
   height: 36px;
   font-size: 1rem;
-  color: steelblue;
+  color: rgb(64, 200, 155);
   cursor: pointer;
 }
 
-.item svg:focus, 
+.item svg:focus,
 .item svg:hover {
   color: red;
   outline: none;
