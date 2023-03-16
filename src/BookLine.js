@@ -15,7 +15,7 @@ import { FaTrashAlt } from "react-icons/fa";
 const BookLine = ({ item, setItems, handleCheck, handleDelete }) => {
   return (
     // we see below that a list element needs a key so that react can keep track of each item. the key can be the id (unique)
-    <li className="item" key={item.id}>
+    <li className="item">
       <input
         type="checkbox"
         checked={item.checked}
