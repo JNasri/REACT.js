@@ -12,7 +12,7 @@ import SearchBook from "./SearchBook";
 import Content from "./Content";
 // importing component into the app component
 import Footer from "./Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // importing fontAwesome trash icon
 
 // react is all about functions. Before, it was all about classes.
@@ -23,7 +23,7 @@ function App() {
   // we moved the items and their functions here so that we can drill it down
   // into 2 different components (content and footer)
   const [items, setItems] = useState(
-    JSON.parse(localStorage.getItem("ShoppingList"))
+    JSON.parse(localStorage.getItem("ShoppingList") || [])
   );
 
   // here we create a state for the addBook
@@ -34,12 +34,11 @@ function App() {
   // useState('') empty because no predefined data to be present
   const [search, setSearch] = useState("");
 
-  const setAndSaveItems = (newItems) => {
-    //  after we updated the array, we will set the items using the useState hook
-    setItems(newItems);
-    // localstorage to save the changes even after reloading the page (not much important)
-    localStorage.setItem("ShoppingList", JSON.stringify(newItems));
-  };
+  // useEffect is a react hook that runs with every render
+  // or dependeing on change in dependencies (e.g [items])
+  useEffect(() => {
+    localStorage.setItem("ShoppingList", JSON.stringify(items));
+  }, [items]);
 
   // here we define the add item function
   const addItme = (item) => {
@@ -49,8 +48,8 @@ function App() {
     const myNewItem = { id, checked: false, item };
     // add myNewItem to the items array
     const listItems = [...items, myNewItem];
-    // pass the listItems to the function that saves the items
-    setAndSaveItems(listItems);
+    // set items in the listItems
+    setItems(listItems);
   };
 
   const handleCheck = (id) => {
@@ -61,16 +60,16 @@ function App() {
     const listItems = items.map((item) =>
       item.id === id ? { ...item, checked: !item.checked } : item
     );
-    // pass the listItems to the function that saves the items
-    setAndSaveItems(listItems);
+    // set items in the listItems
+    setItems(listItems);
   };
 
   const handleDelete = (id) => {
     // console.log(`key : ${id}`);
     // filter() creates a new array without the item  that has the ID passed to the function
     const listItems = items.filter((item) => item.id !== id);
-    // pass the listItems to the function that saves the items
-    setAndSaveItems(listItems);
+    // set items in the listItems
+    setItems(listItems);
   };
 
   const handleSubmit = (e) => {

@@ -4,7 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import { useRef } from "react";
 
 const AddBook = ({ newItem, setNewItem, handleSubmit }) => {
-  const inputRef = useRef();
+  const inputRef = useRef(null);
   return (
     <form className="addForm" onSubmit={handleSubmit}>
       <label htmlFor="addBook">Add Book</label>
