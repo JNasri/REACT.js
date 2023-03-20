@@ -13,7 +13,7 @@ import BookList from "./BookList";
 // they have the same name so no need to change anything
 const Content = ({ items, setItems, handleCheck, handleDelete }) => {
   return (
-    <main>
+    <>
       {/* check if the length is > 0 , if not present a message written down */}
       {items.length ? (
         <BookList
@@ -25,7 +25,7 @@ const Content = ({ items, setItems, handleCheck, handleDelete }) => {
       ) : (
         <p styel={{ marginTop: "2rem" }}>List is Empty</p>
       )}
-    </main>
+    </>
   );
 };
 

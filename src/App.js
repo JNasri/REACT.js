@@ -13,18 +13,17 @@ import Content from "./Content";
 // importing component into the app component
 import Footer from "./Footer";
 import { useState, useEffect } from "react";
+import { FaParagraph } from "react-icons/fa";
 // importing fontAwesome trash icon
 
 // react is all about functions. Before, it was all about classes.
 function App() {
-  // the return is a JSX file (js and xml), its similar to HTML
-  // any JS code must be written inside curly brackers {}
+  // we will add the API here so that we can do CRUD operations on data instead of using localstorage
+  const API_URL = "http://localhost:3500/items";
 
   // we moved the items and their functions here so that we can drill it down
   // into 2 different components (content and footer)
-  const [items, setItems] = useState(
-    JSON.parse(localStorage.getItem("ShoppingList") || [])
-  );
+  const [items, setItems] = useState([]);
 
   // here we create a state for the addBook
   // useState('') empty because no predefined data to be present
@@ -34,11 +33,43 @@ function App() {
   // useState('') empty because no predefined data to be present
   const [search, setSearch] = useState("");
 
+  // useState for catching fetch errors
+  const [fetchErr, setFetchErr] = useState(null);
+
+  // useState to see if the page is still fetching data from API
+  // either true(fetching) or false(notFetching)
+  const [isLoading, setIsLoading] = useState(true);
   // useEffect is a react hook that runs with every render
   // or dependeing on change in dependencies (e.g [items])
   useEffect(() => {
-    localStorage.setItem("ShoppingList", JSON.stringify(items));
-  }, [items]);
+    // make an async functoin that fetch items from API
+    const fetchItems = async () => {
+      try {
+        // get data from API
+        const response = await fetch(API_URL);
+        // check if response is bad (not 200)
+        if (!response.ok) {
+          throw Error("Did not recieve expected data!");
+        }
+        // make it JSON object
+        const listItems = await response.json();
+        // set it (using the useState hook)
+        setItems(listItems);
+        setFetchErr(null);
+      } catch (error) {
+        setFetchErr(error.message);
+        // here , we set the state of loading data from the API
+        // so basically it is set to false if the data is being loaded, then to true if it has finished
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    // simulate the time taken to load from API
+    setTimeout(() => {
+      // call the function above
+      fetchItems();
+    }, 1000);
+  }, []);
 
   // here we define the add item function
   const addItme = (item) => {
@@ -83,6 +114,8 @@ function App() {
     setNewItem("");
   };
 
+  // the return is a JSX file (js and xml), its similar to HTML
+  // any JS code must be written inside curly brackers {}
   return (
     <div className="App">
       {/* The code that was here was divided into
@@ -98,15 +131,28 @@ function App() {
       {/* we added the search form here after the add form  */}
       <SearchBook search={search} setSearch={setSearch} />
 
-      {/* we see the props drilling here as we pass the props to the child component */}
-      <Content
-        items={items.filter((item) =>
-          item.item.toLowerCase().includes(search.toLowerCase())
+      <main>
+        {/* if the data is being loaded, show this message*/}
+        {isLoading && <p>Loading Items...</p>}
+        {/* if error occur, show this message*/}
+        {fetchErr && (
+          <p
+            style={{ color: "red", padding: "1rem" }}
+          >{`Error :  ${fetchErr}`}</p>
         )}
-        setItems={setItems}
-        handleCheck={handleCheck}
-        handleDelete={handleDelete}
-      />
+        {/* we see the props drilling here as we pass the props to the child component */}
+        {/* if no fetchErr and data isn't loading, show content */}
+        {!fetchErr && !isLoading && (
+          <Content
+            items={items.filter((item) =>
+              item.item.toLowerCase().includes(search.toLowerCase())
+            )}
+            setItems={setItems}
+            handleCheck={handleCheck}
+            handleDelete={handleDelete}
+          />
+        )}
+      </main>
       <Footer length={items.length} />
     </div>
   );
