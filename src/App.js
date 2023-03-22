@@ -13,8 +13,8 @@ import Content from "./Content";
 // importing component into the app component
 import Footer from "./Footer";
 import { useState, useEffect } from "react";
-import { FaParagraph } from "react-icons/fa";
-// importing fontAwesome trash icon
+// importing component into the app component
+import apiRequest from "./apiRequest";
 
 // react is all about functions. Before, it was all about classes.
 function App() {
@@ -39,6 +39,7 @@ function App() {
   // useState to see if the page is still fetching data from API
   // either true(fetching) or false(notFetching)
   const [isLoading, setIsLoading] = useState(true);
+
   // useEffect is a react hook that runs with every render
   // or dependeing on change in dependencies (e.g [items])
   useEffect(() => {
@@ -72,7 +73,7 @@ function App() {
   }, []);
 
   // here we define the add item function
-  const addItme = (item) => {
+  const addItme = async (item) => {
     // if items have length then take last id and ++, else start form 1
     const id = items.length ? items[items.length - 1].id + 1 : 1;
     // myNewItem is the id, check always flase, and the item
@@ -81,9 +82,26 @@ function App() {
     const listItems = [...items, myNewItem];
     // set items in the listItems
     setItems(listItems);
+
+    // defining the POST options cuz adding items is post
+    const postOptions = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      // we just need to post the new item added, not the whole listItems
+      body: JSON.stringify(myNewItem),
+    };
+
+    // as we know , the apiRequest method returns just the error message
+    const result = await apiRequest(API_URL, postOptions);
+    // if we have a result, that means we have an error
+    if (result) {
+      setFetchErr(result);
+    }
   };
 
-  const handleCheck = (id) => {
+  const handleCheck = async (id) => {
     //console.log(`key : ${id}`);
     // we will use map() to create a new array that specifically changes the checked for the ID passed
     // if found (?) we retrun the item object with flipped checked (true -> false or vise versa)
@@ -93,14 +111,47 @@ function App() {
     );
     // set items in the listItems
     setItems(listItems);
+
+    // handleCheck is like updating the item state
+    // we first get the item that was updated
+    const myItem = listItems.filter((item) => item.id === id);
+    // then we define the options, same way we did above with addItems
+    const updateOptions = {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+      },
+      //filter() returns an array, so we must say myItem[0]
+      body: JSON.stringify({ checked: myItem[0].checked }),
+    };
+    // we need a specific url for updating
+    const reqUrl = `${API_URL}/${id}`;
+    const result = await apiRequest(reqUrl, updateOptions);
+    // as we know , the apiRequest method returns just the error message
+    // if we have a result, that means we have an error
+    if (result) {
+      setFetchErr(result);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     // console.log(`key : ${id}`);
     // filter() creates a new array without the item  that has the ID passed to the function
     const listItems = items.filter((item) => item.id !== id);
     // set items in the listItems
     setItems(listItems);
+
+    // handleDelete is  deleting the item
+    // we define the options with DELETE method and the ID is provided in the parameters
+    const deleteOptions = { method: "DELETE" };
+    // we need a specific url for deleting
+    const reqUrl = `${API_URL}/${id}`;
+    const result = await apiRequest(reqUrl, deleteOptions);
+    // as we know , the apiRequest method returns just the error message
+    // if we have a result, that means we have an error
+    if (result) {
+      setFetchErr(result);
+    }
   };
 
   const handleSubmit = (e) => {
