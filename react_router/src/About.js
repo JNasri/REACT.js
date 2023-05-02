@@ -2,8 +2,12 @@ import React from "react";
 
 const About = () => {
   return (
-    <main>
-      <h1>About Component</h1>
+    <main className="About">
+      <h2>About</h2>
+      <p style={{ marginTop: "1rem" }}>
+        This blog app is created to mimic a real world application where posts
+        are being created, presented, and deleted.
+      </p>
     </main>
   );
 };
