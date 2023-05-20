@@ -16,7 +16,15 @@ const PostPage = ({ posts, handleDelete }) => {
             <h2>{post.title}</h2>
             <p className="PostDate">{post.datetime}</p>
             <p className="PostBody">{post.body}</p>
-            <button onClick={() => handleDelete(post.id)}>Delete Post</button>
+            <Link to={`/edit/${post.id}`}>
+              <button className="editButton">Edit Post</button>
+            </Link>
+            <button
+              className="deleteButton"
+              onClick={() => handleDelete(post.id)}
+            >
+              Delete Post
+            </button>
           </>
         )}
         {/* if no post found, show error page */}

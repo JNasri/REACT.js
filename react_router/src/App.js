@@ -25,41 +25,47 @@ import { Route, Switch, useHistory } from "react-router-dom";
 // importing some react hooks
 import { useState, useEffect } from "react";
 
+// import the API we made with axios
+import api from "./api/posts";
+import EditPost from "./EditPost";
+
 function App() {
   // hard-code 4 posts (later we will fetch from API)
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "My First Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 2,
-      title: "My 2nd Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 3,
-      title: "My 3rd Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 4,
-      title: "My Fourth Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
 
   // define useState hooks
   const [search, setSearch] = useState("");
   const [postTitle, setPostTitle] = useState("");
   const [postBody, setPostBody] = useState("");
+  // create a hook for updating title and body of a post (with axios)
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
   // useHistory is a hook in React Router that allows you to access the router state when navigating within your components
   const history = useHistory();
+
+  // use effect for fetching data from our api (axios)
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        // get data from the api
+        const response = await api.get("/posts");
+        // good thing about axios is that it creates json automatically and catch any errors (no need to if(!response.ok) )
+        setPosts(response.data);
+      } catch (error) {
+        if (error.response) {
+          // resoponse is not in the 200 range (error)
+          // show error messages
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.Header);
+        } else {
+          // error is unknown, show error message
+          console.log(`Error : ${error.message}`);
+        }
+      }
+    };
+    fetchPosts();
+  }, []);
 
   // define a useState for search bar to be used with useEffect
   const [searchResults, setSearchResults] = useState([]);
@@ -76,7 +82,7 @@ function App() {
     setSearchResults(filteredResults.reverse());
   }, [posts, search]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // if posts exists, get last id and add 1 to it, else just 1
     const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
@@ -89,24 +95,69 @@ function App() {
       datetime: dateTime,
       body: postBody,
     };
-    // add newPost to all posts and setPosts the new list
-    const allPosts = [...posts, newPost];
-    setPosts(allPosts);
-    // delete inputs in the form
-    setPostTitle("");
-    setPostBody("");
-    // go back to home
-    history.push("/");
+
+    // this code is after adding the axios api (data/db.json)
+    try {
+      // call api.post with path to db.json and the new post created
+      const response = await api.post("/posts", newPost);
+      // add newPost to all posts and setPosts the new list
+      const allPosts = [...posts, response.data];
+      setPosts(allPosts);
+      // delete inputs in the form
+      setPostTitle("");
+      setPostBody("");
+      // go back to home
+      history.push("/");
+    } catch (error) {
+      console.log(`Error ${error.message}`);
+    }
   };
 
-  const handleDelete = (id) => {
-    // remove the post from the list
-    const postsList = posts.filter((post) => post.id != id);
-    // set the posts to the list with the new list
-    setPosts(postsList);
-    // once delete is finished, go to home page with
-    // using the useHistory hook
-    history.push("/");
+  // this code was edited after adding the axios api (data/db.json)
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`posts/${id}`);
+      // remove the post from the list
+      const postsList = posts.filter((post) => post.id != id);
+      // set the posts to the list with the new list
+      setPosts(postsList);
+      // once delete is finished, go to home page with
+      // using the useHistory hook
+      history.push("/");
+    } catch (error) {
+      console.log(`Error ${error.message}`);
+    }
+  };
+
+  // a functoin for editing a post (Update operation of the CRUD operations)
+  const handleEdit = async (id) => {
+    // M=month , d=day , y=year , p = time
+    const dateTime = format(new Date(), "MMMM dd, yyyy pp");
+    // make an updatedPost object to updated a current post
+    const updatedPost = {
+      id,
+      title: editTitle,
+      datetime: dateTime,
+      body: editBody,
+    };
+    // using axios we will update a post by its id and the data provided above
+    try {
+      // put(update) the post with the id wiht our updatedPost object
+      const response = await api.put(`posts/${id}`, updatedPost);
+      // using map to iterate through all posts
+      // if a post is the deleted post (post.id == id), replace with response.data
+      // else (the post is not the deleted post) , keep it as post
+      setPosts(
+        posts.map((post) => (post.id === id ? { ...response.data } : post))
+      );
+      // empty the edit title and body inputs
+      setEditTitle("");
+      setEditBody("");
+      // using the useHistory hook
+      history.push("/");
+    } catch (error) {
+      console.log(`Error ${error.message}`);
+    }
   };
 
   return (
@@ -124,6 +175,16 @@ function App() {
             postBody={postBody}
             setPostBody={setPostBody}
             handleSubmit={handleSubmit}
+          />
+        </Route>
+        <Route exact path="/edit/:id">
+          <EditPost
+            posts={posts}
+            editTitle={editTitle}
+            setEditTitle={setEditTitle}
+            editBody={editBody}
+            setEditBody={setEditBody}
+            handleEdit={handleEdit}
           />
         </Route>
         <Route path="/post/:id">
