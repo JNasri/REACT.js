@@ -27,6 +27,8 @@ import { useState, useEffect } from "react";
 
 // import the API we made with axios
 import api from "./api/posts";
+import useWindowSize from "./hooks/useWindowSize";
+import useAxiosFetch from "./hooks/useAxiosFetch";
 import EditPost from "./EditPost";
 
 function App() {
@@ -42,30 +44,16 @@ function App() {
   const [editBody, setEditBody] = useState("");
   // useHistory is a hook in React Router that allows you to access the router state when navigating within your components
   const history = useHistory();
-
-  // use effect for fetching data from our api (axios)
+  // get the width
+  const { width } = useWindowSize();
+  // get the useAxiosFetch attributes
+  const { data, fetchErr, isLoading } = useAxiosFetch(
+    "http://localhost:3500/posts"
+  );
+  // useEffect for data change
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        // get data from the api
-        const response = await api.get("/posts");
-        // good thing about axios is that it creates json automatically and catch any errors (no need to if(!response.ok) )
-        setPosts(response.data);
-      } catch (error) {
-        if (error.response) {
-          // resoponse is not in the 200 range (error)
-          // show error messages
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.Header);
-        } else {
-          // error is unknown, show error message
-          console.log(`Error : ${error.message}`);
-        }
-      }
-    };
-    fetchPosts();
-  }, []);
+    setPosts(data);
+  }, [data]);
 
   // define a useState for search bar to be used with useEffect
   const [searchResults, setSearchResults] = useState([]);
@@ -162,11 +150,15 @@ function App() {
 
   return (
     <div className="App">
-      <Header title="ReactJS Blog" />
+      <Header title="ReactJS Blog" width={width} />
       <Nav search={search} setSearch={setSearch} />
       <Switch>
         <Route exact path="/">
-          <Home posts={searchResults} />
+          <Home
+            posts={searchResults}
+            fetchErr={fetchErr}
+            isLoading={isLoading}
+          />
         </Route>
         <Route exact path="/post">
           <NewPost
