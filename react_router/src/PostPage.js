@@ -1,8 +1,31 @@
 import React from "react";
-import { useParams, link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import { useHistory } from "react-router-dom";
+import api from "./api/posts";
+import { useContext } from "react";
+import DataContext from "./context/DataContext";
 
-const PostPage = ({ posts, handleDelete }) => {
+const PostPage = () => {
+  const { posts, setPosts } = useContext(DataContext);
+  const history = useHistory();
+
+  // this code was edited after adding the axios api (data/db.json)
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`posts/${id}`);
+      // remove the post from the list
+      const postsList = posts.filter((post) => post.id != id);
+      // set the posts to the list with the new list
+      setPosts(postsList);
+      // once delete is finished, go to home page with
+      // using the useHistory hook
+      history.push("/");
+    } catch (error) {
+      console.log(`Error ${error.message}`);
+    }
+  };
+
   // get the parameter from the URL (must be same name)
   const { id } = useParams();
   // find the post that has the id of the id in parameter
