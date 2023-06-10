@@ -1,22 +1,26 @@
 import React from "react";
 
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
-import api from "./api/posts";
+import { useEffect } from "react";
+import { useParams, Link, useHistory } from "react-router-dom";
 import { format } from "date-fns";
-import { useHistory } from "react-router-dom";
-import { useContext } from "react";
-import DataContext from "./context/DataContext";
+import { useStoreState, useStoreActions } from "easy-peasy";
 
 const EditPost = () => {
-  // create a hook for updating title and body of a post (with axios)
-  const [editTitle, setEditTitle] = useState("");
-  const [editBody, setEditBody] = useState("");
-  const { posts, setPosts } = useContext(DataContext);
+  const editTitle = useStoreState((state) => state.editTitle);
+  const editBody = useStoreState((state) => state.editBody);
+  const editPost = useStoreActions((actions) => actions.editPost);
+  const setEditTitle = useStoreActions((actions) => actions.setEditTitle);
+  const setEditBody = useStoreActions((actions) => actions.setEditBody);
+
   const history = useHistory();
+  const { id } = useParams();
+
+  const getPostById = useStoreState((state) => state.getPostById);
+  // find the post that has the id of the id in parameter
+  const post = getPostById(id);
+
   // a functoin for editing a post (Update operation of the CRUD operations)
-  const handleEdit = async (id) => {
+  const handleEdit = (id) => {
     // M=month , d=day , y=year , p = time
     const dateTime = format(new Date(), "MMMM dd, yyyy pp");
     // make an updatedPost object to updated a current post
@@ -26,29 +30,10 @@ const EditPost = () => {
       datetime: dateTime,
       body: editBody,
     };
-    // using axios we will update a post by its id and the data provided above
-    try {
-      // put(update) the post with the id wiht our updatedPost object
-      const response = await api.put(`posts/${id}`, updatedPost);
-      // using map to iterate through all posts
-      // if a post is the deleted post (post.id == id), replace with response.data
-      // else (the post is not the deleted post) , keep it as post
-      setPosts(
-        posts.map((post) => (post.id === id ? { ...response.data } : post))
-      );
-      // empty the edit title and body inputs
-      setEditTitle("");
-      setEditBody("");
-      // using the useHistory hook
-      history.push("/");
-    } catch (error) {
-      console.log(`Error ${error.message}`);
-    }
+    editPost(updatedPost);
+    // using the useHistory hook to move to the post page after update is complete
+    history.push(`/post/${id}`);
   };
-  // get the ID from the parameters
-  const { id } = useParams();
-  // find the post to be updated
-  const post = posts.find((post) => post.id == id);
 
   // when this component is called we need to get the data and set the state
   useEffect(() => {
@@ -56,7 +41,7 @@ const EditPost = () => {
       setEditTitle(post.title);
       setEditBody(post.body);
     }
-  }, [posts, setEditTitle, setEditBody]);
+  }, [post, setEditTitle, setEditBody]);
   return (
     <main className="NewPost">
       {editTitle && (

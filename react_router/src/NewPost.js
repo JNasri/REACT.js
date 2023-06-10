@@ -1,17 +1,18 @@
 import React from "react";
-import { useState, useContext } from "react";
-import DataContext from "./context/DataContext";
 import { useHistory } from "react-router-dom";
-import api from "./api/posts";
 import { format } from "date-fns";
+import { useStoreState, useStoreActions } from "easy-peasy";
 
 const NewPost = () => {
-  const [postTitle, setPostTitle] = useState("");
-  const [postBody, setPostBody] = useState("");
-  const { posts, setPosts } = useContext(DataContext);
+  const posts = useStoreState((state) => state.posts);
+  const postTitle = useStoreState((state) => state.postTitle);
+  const postBody = useStoreState((state) => state.postBody);
+  const savePost = useStoreActions((actions) => actions.savePost);
+  const setPostTitle = useStoreActions((actions) => actions.setPostTitle);
+  const setPostBody = useStoreActions((actions) => actions.setPostBody);
   const history = useHistory();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     // if posts exists, get last id and add 1 to it, else just 1
     const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
@@ -24,22 +25,10 @@ const NewPost = () => {
       datetime: dateTime,
       body: postBody,
     };
-
-    // this code is after adding the axios api (data/db.json)
-    try {
-      // call api.post with path to db.json and the new post created
-      const response = await api.post("/posts", newPost);
-      // add newPost to all posts and setPosts the new list
-      const allPosts = [...posts, response.data];
-      setPosts(allPosts);
-      // delete inputs in the form
-      setPostTitle("");
-      setPostBody("");
-      // go back to home
-      history.push("/");
-    } catch (error) {
-      console.log(`Error ${error.message}`);
-    }
+    // save the post
+    savePost(newPost);
+    // go back to home
+    history.push("/");
   };
   return (
     <main className="NewPost">

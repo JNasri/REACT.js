@@ -1,10 +1,28 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useContext } from "react";
-import DataContext from "./context/DataContext";
+import { useEffect } from "react";
+import { useStoreState, useStoreActions } from "easy-peasy";
 
 const Nav = () => {
-  const { search, setSearch } = useContext(DataContext);
+  const posts = useStoreState((state) => state.posts);
+  const search = useStoreState((state) => state.search);
+  const setSearch = useStoreActions((actions) => actions.setSearch);
+  const setSearchResults = useStoreActions(
+    (actions) => actions.setSearchResults
+  );
+  // useEffect with [posts, search] as dependencies
+  useEffect(() => {
+    const filteredResults = posts.filter(
+      (post) =>
+        // check if any of the posts bodies match the search
+        post.body.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+        // or if any of the posts titles match the search
+        post.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    );
+    // after we found the resutl, set it (if empty it will show all posts)
+    setSearchResults(filteredResults.reverse());
+  }, [posts, search, setSearchResults]);
+
   return (
     <nav className="Nav">
       <form className="searchForm" onSubmit={(e) => e.preventDefault()}>
